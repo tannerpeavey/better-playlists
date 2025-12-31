@@ -1,8 +1,13 @@
 from fastapi import APIRouter
 from models import Song, Playlist
 from typing import List
+from spotify_client import get_spotify_token
+import requests
+
 
 router = APIRouter()
+
+
 
 # Temporary in-memory store
 songs_db: List[Song] = []
@@ -40,3 +45,23 @@ def add_tags(spotify_id: str, tags: List[str]):
 def generate_playlist():
     # TODO: implement playlist generation logic
     return {"message": "Playlist generation coming soon!"}
+
+@router.get("/search")
+def search_songs(query: str):
+    token = get_spotify_token()
+    url = "https://api.spotify.com/v1/search"
+    headers = {"Authorization": f"Bearer {token}"}
+    params = {
+        "q": query,   # the search query string
+        "type": "track",
+        "limit": 5    # top 5 results
+    }
+    response = requests.get(url, headers=headers, params=params)
+    return response.json()
+
+
+@router.post("/add-song")
+def add_song(spotify_id: str, title: str, artist: str):
+    song = Song(spotify_id=spotify_id, title=title, artist=artist)
+    songs_db.append(song)
+    return {"message": "Song added!", "song": song}
