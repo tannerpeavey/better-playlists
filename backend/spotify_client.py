@@ -23,3 +23,15 @@ def get_spotify_token():
     response = requests.post(url, headers=headers, data=data)
     token = response.json().get("access_token")
     return token
+
+def get_audio_features(spotify_id: str, token: str):
+    url = f"https://api.spotify.com/v1/audio-features/{spotify_id}"
+    headers = {"Authorization": f"Bearer {token}"}
+    response = requests.get(url, headers=headers)
+    data = response.json()
+    # Return only the fields we care about
+    return {
+        "energy": data.get("energy"),
+        "valence": data.get("valence"),
+        "danceability": data.get("danceability")
+    }
